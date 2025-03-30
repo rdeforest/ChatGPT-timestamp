@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "Hello World Extension",
+  "name": "ChatGPT is Helen Keller",
   "version": "1.0",
-  "description": "A simple Hello World Firefox extension",
+  "description": "Provide ChatGPT with ways to interact with the world through a user's browser",
   "permissions": [
     "webRequest",
     "webRequestBlocking",
@@ -17,10 +17,10 @@
   "background": {
     "scripts": ["background.js"]
   },
-	"content_scripts": [
-		{
-			"matches": ["*://chatgpt.com/*"],
-			"js": ["content.js"]
-		}
-	]
+  "content_scripts": [
+    {
+      "matches": ["*://chatgpt.com/*"],
+      "js": ["content.js"]
+    }
+  ]
 }
