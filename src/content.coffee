@@ -1,57 +1,121 @@
-log = (s, args...) ->
-  console.log "[cGPTts Content]: " + s, args...
+META_KEY = "cgptihkv1"
 
-findChatInput = ->
+log = (s, args...) -> console.log "[cGPTts Content]: " + s, args...
+
+metaData        = {}
+inputElement    = null
+metaDataElement = null
+
+getOrSetInputElement = ->
+  if not currentInputElement = document.querySelector "#prompt-textarea"
+    log "error locating inputElement"
+    return
+
+  if inputElement isnt currentInputElement
+    log "inputElement updating"
+    inputElement = currentInputElement
+    resetMetaData()
+
+setMetaHTML = ->
+  metaElement.innerHTML = JSON.stringify metaData
+
+resetMetaData = ->
+  metaData = Object.assign key: META_KEY, start: Date.now()
+  metaElement = document.createElement 'p'
+  inputElement.prepend metaElement
+  setMetaHTML()
 
 
-# Function to insert timestamps
+updateMetaData = (changes) ->
+  log "updateMetaData: " + JSON.stringify changes
+  getOrSetInputElement()
+
+  Object.assign metaData, changes
+  setMetaHTML()
+
+
+addOrUpdateTimestamp = (stampName) -> updateMetaData [stampName]: Date.now()
+
+
 insertTimestamp = (location) ->
-  inputField = document.querySelector "#prompt-textarea"
+  log "insertTimestamp (#{location})"
 
-  prependText = (text) -> inputField.innerText = text + inputField.innerText
-  appendText  = (text) -> inputField.innerText =        inputField.innerText + text
-  
+  if not inputField = document.querySelector "#prompt-textarea"
+    log "error locating inputField"
+    return
+
+  log "inputField HTML contents: " + inputField.getHTML()
+
   timestamp = new Date().toISOString()
 
-  switch location
-    when "start"
-      fn = prependText
-      text = "[#{timestamp} response received]\n\n"
-    when "end"
-      fn = appendText
-      text = "\n\n[#{timestamp} query sent]"
+  (newParagraph = document.createElement "p")
+    .classList.add "timestamp", location
 
-  fn text
+  [newParagraph.textContent, prefix] =
+    if location is "start"
+      [ "[#{timestamp} response received]", "pre" ]
+    else
+      [ "[#{timestamp} query sent]",        "ap" ]
+
+  addIfAbsent prefix, "timestamp", newParagraph, inputField
 
 
-# Wait for the input field to exist before adding listeners
 waitForInputField = (callback) ->
   attempt = 0
   check = ->
     inputField = document.querySelector "#prompt-textarea"
     if inputField?
       log "Found input field!"
+
       callback(inputField)
     else if attempt < 10
       attempt++
       log "Retrying to find input field... Attempt #{attempt}"
-      setTimeout check, 500  # Try again in 500ms
+
+      setTimeout check, 500
     else
       log "Gave up finding #prompt-textarea"
 
   check()
 
 waitForInputField (inputField) ->
-  inputField.addEventListener "input", (event) ->
-    log "Input detected! Current content: #{inputField.innerText}"
+  if not inputField.dataset.tsListenersAdded
+    inputField.dataset.tsListenersAdded = "true"
 
-  inputField.addEventListener "keypress", (event) ->
-    if event.key is "Enter" and not event.shiftKey
-      log "Enter key detected"
-      insertTimestamp "end"
+    inputField.addEventListener "input", (event) ->
+      log "Input detected! Current content: #{inputField.value}"
 
-browser.runtime.onMessage.addListener (message, sender, sendResponse) ->
-  if message.action is "insertTimestamp"
-    insertTimestamp "start"
+    inputField.addEventListener "keydown", (event) ->
+      if event.key is "Enter"
+        if event.shiftKey
+          log "Ignoring shift-enter"
+        else
+          log "Enter key detected"
+          updateTimestamp "querySent"
 
-log "doc loaded"
+
+updateEndTimestamp = ->
+  log "updateEndTimestamp"
+
+  if pid = updateEndTimestamp.pid
+    clearTimeout pid
+
+  addOrUpdateTimestamp "querySent"
+  updateEndTimestamp.pid = setTimeout 100, updateEndTimestamp
+
+browser
+  .runtime
+  .onMessage
+  .addListener (message, sender, sendResponse) ->
+    log "Message received from background"
+
+    if message.action is "insertTimestamp"
+      getOrSetInputElement()
+
+      if not metaData.responseReceived
+        addOrUpdateTimestamp "responseReceived"
+
+    updateEndTimestamp()
+
+
+log "doc loaded (v1.2)"
