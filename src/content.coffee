@@ -6,11 +6,59 @@ metaData        = {}
 inputElement    = null
 metaDataElement = null
 
-getOrSetInputElement = ->
+locateInputElement = ->
   if not currentInputElement = document.querySelector "#prompt-textarea"
     log "error locating inputElement"
+
+  if currentInputElement isnt inputElement
+    log "inputElement changed"
+
+  inputElement = currentInputElement
+
+
+prepareDataElement = ->
+  return if not locateInputElement()
+
+  if not firstChild = inputElement.children[0]
+    addDataElement()
     return
 
+  text = firstChild.innerHTML[0]
+
+  try
+    JSON.parse text
+  catch
+    addDataElement()
+
+addDataElement = ->
+  metaDataElement = document.createElement 'p'
+  metaDataElement.innerHTML = '{}'
+  inputElement.prepend metaDataElement
+
+updateDataElement = ->
+  return if not prepareDataElement()
+
+  metaDataElement.innerHTML = JSON.stringify metaData
+
+queryDataElement = ->
+  return if not prepareDataElement()
+
+  value = null
+
+  try
+    value = JSON.stringify metaDataElement.innerHTML
+
+  return value
+
+setKey = (key, value) ->
+  metaData[key] = value
+  updateDataElement()
+
+updateTimestamp = (which) -> setKey 'timestamp' + which, Date.now()
+
+###
+
+getOrSetInputElement = ->
   if inputElement isnt currentInputElement
     log "inputElement updating"
     inputElement = currentInputElement

@@ -30,3 +30,10 @@ responses from it and from the user.
 
 Give ChatGPT access to the user's browser's WebStorage API so it can enhance
 its memory and possibly detect biases and flaws in its innate memory.
+
+# Credits
+
+This project is almost entirely composed by me, Robert de Forest. I must also
+credit my conversations with ChatGPT itself. It gave me info about the web
+extension protocols, some code snippets to get me started, some help debugging
+and it helped me figure out which events to hook into.
