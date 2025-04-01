@@ -1,4 +1,9 @@
 META_KEY = "cgptihkv1"
+VERSION = [
+  VERSION_MAJOR = 1
+  VERSION_MINOR = 2
+  VERSION_PATCH = 1
+].join '.'
 
 log = (s, args...) -> console.log "[cGPTts Content]: " + s, args...
 
@@ -165,5 +170,7 @@ browser
 
     updateEndTimestamp()
 
+###
 
-log "doc loaded (v1.2)"
+log "doc loaded (v#{VERSION})"
+

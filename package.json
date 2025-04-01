@@ -1,0 +1,20 @@
+{
+  "name": "chatgpt-timestamp",
+  "version": "1.2.1",
+  "description": "Give ChatGPT a sense of time",
+  "homepage": "https://github.com/rdeforest/ChatGPT-timestamp#readme",
+  "bugs": {
+    "url": "https://github.com/rdeforest/ChatGPT-timestamp/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rdeforest/ChatGPT-timestamp.git"
+  },
+  "license": "MIT",
+  "author": "Robert de Forest <robert@defore.st>",
+  "type": "commonjs",
+  "main": "js/index.js",
+  "scripts": {
+    "test": "coffee t/index.coffee"
+  }
+}
